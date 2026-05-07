@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPL SIP — GMG Colour Management Software</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy: #1A2B4A;
+    --blue: #2E75B6;
+    --gmg: #8B1F41;
+    --purple: #6B21A8;
+    --green: #27AE60;
+    --red: #E74C3C;
+    --amber: #F39C12;
+    --bg: #FAF5FF;
+    --card: #FFFFFF;
+    --border: #E2D5F0;
+    --text: #1A2B4A;
+    --muted: #6B5A80;
+    --success-bg: #EBF8F0;
+    --danger-bg: #FDEDED;
+    --info-bg: #F3EEFF;
+    --amber-bg: #FEF9EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header { background: var(--navy); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header .logo { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: .08em; text-transform: uppercase; }
+  header .layer-badge { background: var(--gmg); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+
+  .hero { background: linear-gradient(135deg, #2D0A2E 0%, #4A1A6A 100%); padding: 40px 32px 32px; color: #fff; }
+  .hero h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .hero p { font-size: 14px; color: rgba(255,255,255,.7); max-width: 600px; line-height: 1.6; }
+  .problem-bar { background: #E74C3C22; border: 1px solid #E74C3C55; border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 13px; color: #FFB3AD; }
+  .problem-bar strong { color: #FF6B6B; }
+
+  .main { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
+  .sim-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
+
+  .scenario { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .scenario-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .scenario-num { width: 28px; height: 28px; background: var(--gmg); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .scenario-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .scenario-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ── BIG LOOP COMPARISON ── */
+  .loop-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .loop-box { border-radius: 12px; padding: 20px; }
+  .loop-box.before { background: var(--danger-bg); border: 1px solid #E74C3C33; }
+  .loop-box.after { background: var(--success-bg); border: 1px solid #27AE6033; }
+
+  .loop-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+  .loop-box.before h3 { color: var(--red); }
+  .loop-box.after h3 { color: var(--green); }
+
+  .loop-counter {
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+
+  .loop-box.before .loop-counter { color: var(--red); }
+  .loop-box.after .loop-counter { color: var(--green); }
+  .loop-label { font-size: 13px; margin-bottom: 16px; }
+  .loop-box.before .loop-label { color: #B03030; }
+  .loop-box.after .loop-label { color: #1A6B3A; }
+  .loop-cost { font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 8px; margin-bottom: 14px; }
+  .loop-box.before .loop-cost { background: rgba(231,76,60,.15); color: var(--red); }
+  .loop-box.after .loop-cost { background: rgba(39,174,96,.15); color: var(--green); }
+  .loop-step { font-size: 12px; color: var(--text); margin-bottom: 8px; padding-left: 16px; position: relative; line-height: 1.5; }
+  .loop-step::before { content: '•'; position: absolute; left: 0; }
+
+  /* ── STEP FLOW ── */
+  .step-flow { display: flex; gap: 0; align-items: stretch; position: relative; }
+  .step-flow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--purple)66, var(--green));
+    z-index: 0;
+    transform: translateY(-50%);
+  }
+
+  .sf-step {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    margin: 0 4px;
+    transition: box-shadow .2s;
+  }
+
+  .sf-step:hover { box-shadow: 0 4px 12px rgba(107,33,168,.12); }
+  .sf-step.gmg-step { background: var(--info-bg); border-color: var(--purple)44; }
+  .sf-step.done-step { background: var(--success-bg); border-color: #27AE6044; }
+
+  .sf-icon { font-size: 24px; margin-bottom: 8px; }
+  .sf-num { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .sf-title { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .sf-sub { font-size: 10px; color: var(--muted); line-height: 1.4; }
+  .sf-owner { display: inline-block; margin-top: 8px; font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .sf-owner.gmg { background: var(--info-bg); color: var(--purple); border: 1px solid var(--purple)22; }
+  .sf-owner.prod { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber)33; }
+  .sf-owner.client { background: #E8F5F4; color: #0D9488; border: 1px solid #0D948833; }
+
+  /* ── DELTA-E EXPLAINER ── */
+  .delta-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .delta-meter-wrap { text-align: center; }
+  .delta-title { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 16px; }
+
+  .delta-bar-container { position: relative; height: 32px; background: linear-gradient(90deg, #27AE60, #F39C12 40%, #E74C3C 70%); border-radius: 16px; margin-bottom: 10px; overflow: visible; }
+  .delta-marker { position: absolute; top: -4px; width: 4px; height: 40px; background: var(--navy); border-radius: 2px; transform: translateX(-50%); }
+  .delta-marker-label { position: absolute; top: -22px; font-size: 11px; font-weight: 700; color: var(--navy); transform: translateX(-50%); white-space: nowrap; }
+  .delta-zones { display: flex; gap: 0; margin-top: 6px; }
+  .dz { flex: 1; font-size: 9px; text-align: center; padding: 3px; font-weight: 600; }
+  .dz.pass { color: var(--green); }
+  .dz.warn { color: var(--amber); }
+  .dz.fail { color: var(--red); }
+
+  .delta-examples { }
+  .de-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+  .de-swatches { display: flex; gap: 4px; }
+  .de-swatch { width: 30px; height: 30px; border-radius: 4px; }
+  .de-info { flex: 1; }
+  .de-score { font-size: 13px; font-weight: 700; }
+  .de-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .de-verdict { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+  .de-verdict.pass { background: var(--success-bg); color: var(--green); }
+  .de-verdict.fail { background: var(--danger-bg); color: var(--red); }
+
+  /* ── GMG REPORT ── */
+  .gmg-report { background: #1A0A2E; border-radius: 12px; padding: 20px; }
+  .report-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .report-logo { font-size: 14px; font-weight: 700; color: #C084FC; letter-spacing: .08em; }
+  .report-title { font-size: 13px; color: rgba(255,255,255,.7); }
+  .report-badge { margin-left: auto; background: #14532D; color: #4ADE80; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .r-section { }
+  .r-section-title { font-size: 10px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .r-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 12px; }
+  .r-key { color: rgba(255,255,255,.5); }
+  .r-val { color: #fff; font-weight: 500; font-family: 'DM Mono', monospace; }
+  .r-val.pass { color: #4ADE80; }
+  .r-val.warn { color: #FBBF24; }
+  .report-footer { background: rgba(255,255,255,.04); border-radius: 8px; padding: 12px; font-size: 11px; color: rgba(255,255,255,.5); }
+  .report-footer strong { color: rgba(255,255,255,.8); }
+
+  /* ── CLIENT VIEW ── */
+  .client-view { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .cv-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .cv-badge.pass { background: var(--success-bg); color: var(--green); border: 1px solid #27AE6033; }
+  .cv-note { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+  .cv-data { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cv-kpi { background: var(--bg); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .cv-kpi-val { font-size: 18px; font-weight: 700; color: var(--navy); }
+  .cv-kpi-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* ── SAVING BREAKDOWN ── */
+  .saving-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .sav-card { border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
+  .sav-icon { font-size: 22px; margin-bottom: 8px; }
+  .sav-title { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .sav-amount { font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+  .sav-how { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .cost-card { border-radius: 10px; padding: 16px; }
+  .cost-card-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .cost-card-val { font-size: 20px; font-weight: 600; }
+  .cost-card-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .fade-in { opacity: 0; transform: translateY(12px); animation: fadeUp .5s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+
+  footer { text-align: center; padding: 24px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CPL — Sampling Intelligence Platform</div>
+  <div class="layer-badge">GMG — Colour Management</div>
+</header>
+
+<div class="hero">
+  <h1>GMG Colour Management Software — Recommended Acquisition</h1>
+  <p>GMG (from GMG GmbH, Germany) calculates the exact ink recipe from a Pantone reference. A spectrophotometer measures the printed result and returns a Delta-E number. This replaces subjective manual colour matching and directly collapses the 35× iteration loop to 2–3 targeted corrections.</p>
+  <div class="problem-bar">
+    <strong>Root cause closed:</strong> RC4 — No digital colour management system &nbsp;|&nbsp; Primary driver of the 35× iteration loop — eliminated
+  </div>
+</div>
+
+<div class="main">
+  <p class="sim-title">The problem GMG solves — then how it solves it</p>
+
+  <!-- STEP 1: The loop problem -->
+  <div class="scenario fade-in" style="animation-delay:.1s">
+    <div class="scenario-header">
+      <div class="scenario-num">1</div>
+      <div>
+        <div class="scenario-title">The 35× iteration loop — the single most expensive structural flaw</div>
+        <div class="scenario-sub">Without GMG, production manually guesses the ink mix. Every wrong guess = full reprint. The client compares physical cards subjectively = no objective way to approve.</div>
+      </div>
+    </div>
+    <div class="loop-compare">
+      <div class="loop-box before">
+        <h3>❌ Before GMG — manual guessing</h3>
+        <div class="loop-counter">35×</div>
+        <div class="loop-label">Average iterations per customer</div>
+        <div class="loop-cost">Worst case: 843 iterations (CLT-155, 6 months)</div>
+        <div class="loop-step">Production guesses ink mix from visual memory of Pantone</div>
+        <div class="loop-step">Prints shade card — looks approximately right</div>
+        <div class="loop-step">Client receives physical card by courier (1–2 days)</div>
+        <div class="loop-step">Client holds it under light and squints — "a bit too red"</div>
+        <div class="loop-step">Verbal feedback via WhatsApp — production guesses again</div>
+        <div class="loop-step">Repeat. 35 times on average. 113 days worst case.</div>
+        <div style="margin-top:12px;font-size:13px;font-weight:600;color:var(--red)">Stages S4+S5 = Rs. 56.1M of Rs. 107M total</div>
+      </div>
+      <div class="loop-box after">
+        <h3>✓ After GMG — precision from first print</h3>
+        <div class="loop-counter pulse">2–3×</div>
+        <div class="loop-label">Iterations (targeted corrections only)</div>
+        <div class="loop-cost">Saving: Rs. 1.8M–2.3M per month</div>
+        <div class="loop-step">Client submits Pantone code via portal</div>
+        <div class="loop-step">GMG calculates exact ink recipe — no guessing</div>
+        <div class="loop-step">First print is already near-right (±Delta-E 1–2)</div>
+        <div class="loop-step">Spectrophotometer measures — objective Delta-E score</div>
+        <div class="loop-step">Client approves based on data: "PASS — Delta-E 1.4"</div>
+        <div class="loop-step">If correction needed: structured feedback → GMG recalculates</div>
+        <div style="margin-top:12px;font-size:13px;font-weight:600;color:var(--green)">25% fewer repeat proofing runs. Cycle: 52 → 25–35 days.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: How GMG works step by step -->
+  <div class="scenario fade-in" style="animation-delay:.2s">
+    <div class="scenario-header">
+      <div class="scenario-num">2</div>
+      <div>
+        <div class="scenario-title">GMG — exactly how it works, step by step</div>
+        <div class="scenario-sub">5 steps from Pantone code to portal approval. GMG handles steps 2 and 4. The client only ever sees step 5.</div>
+      </div>
+    </div>
+    <div class="step-flow">
+      <div class="sf-step">
+        <div class="sf-icon">🎨</div>
+        <div class="sf-num">Step 1</div>
+        <div class="sf-title">Pantone code submitted</div>
+        <div class="sf-sub">Client enters PMS reference in portal (e.g. PMS 485 C)</div>
+        <div class="sf-owner client">Client → Portal</div>
+      </div>
+      <div class="sf-step gmg-step">
+        <div class="sf-icon">🧪</div>
+        <div class="sf-num">Step 2 — GMG</div>
+        <div class="sf-title">Ink recipe calculated</div>
+        <div class="sf-sub">GMG computes exact CMYK + spot ink percentages for this Pantone on this substrate</div>
+        <div class="sf-owner gmg">GMG Software</div>
+      </div>
+      <div class="sf-step" style="background:var(--amber-bg);border-color:var(--amber)33">
+        <div class="sf-icon">🖨️</div>
+        <div class="sf-num">Step 3</div>
+        <div class="sf-title">Shade card printed</div>
+        <div class="sf-sub">Production prints using the precise GMG recipe — first attempt is already near-right</div>
+        <div class="sf-owner prod">Production</div>
+      </div>
+      <div class="sf-step gmg-step">
+        <div class="sf-icon">🔬</div>
+        <div class="sf-num">Step 4 — GMG</div>
+        <div class="sf-title">Spectrophotometer measures</div>
+        <div class="sf-sub">Device reads L*a*b* values of printed card. GMG calculates Delta-E vs. Pantone reference</div>
+        <div class="sf-owner gmg">GMG + Device</div>
+      </div>
+      <div class="sf-step done-step">
+        <div class="sf-icon">📊</div>
+        <div class="sf-num">Step 5</div>
+        <div class="sf-title">Report → portal</div>
+        <div class="sf-sub">PDF report with PASS/FAIL + Delta-E attaches to shade card record. Client approves on data.</div>
+        <div class="sf-owner client">Client sees output</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;background:var(--info-bg);border:1px solid var(--purple)22;border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">
+      💡 <strong style="color:var(--navy)">Clients never see or use GMG software.</strong> They only see the plain-language output — "PASS — Delta-E 1.4" — in the portal. Zero training required on the client side. GMG is entirely CPL's internal tool.
+    </div>
+  </div>
+
+  <!-- STEP 3: Delta-E explained simply -->
+  <div class="scenario fade-in" style="animation-delay:.3s">
+    <div class="scenario-header">
+      <div class="scenario-num">3</div>
+      <div>
+        <div class="scenario-title">What is Delta-E? — The number that replaces "it looks a bit off"</div>
+        <div class="scenario-sub">Delta-E is the objective distance between two colours. Lower is more accurate. Industry standard for packaging is Delta-E ≤ 2.0.</div>
+      </div>
+    </div>
+    <div class="delta-wrap">
+      <div class="delta-meter-wrap">
+        <div class="delta-title">Delta-E scale — colour difference meter</div>
+        <div class="delta-bar-container">
+          <div class="delta-marker" style="left:14%">
+            <span class="delta-marker-label">1.4 ✓</span>
+          </div>
+          <div class="delta-marker" style="left:33%;background:#F39C12">
+            <span class="delta-marker-label" style="color:var(--amber)">2.0</span>
+          </div>
+        </div>
+        <div class="delta-zones">
+          <div class="dz pass" style="flex:2">0–2.0 PASS</div>
+          <div class="dz warn" style="flex:1.5">2–4 Borderline</div>
+          <div class="dz fail" style="flex:2">4+ FAIL — reprint</div>
+        </div>
+        <div style="margin-top:20px;text-align:left">
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px">What different Delta-E values feel like to a human eye:</div>
+          <div class="de-row" style="background:var(--success-bg)">
+            <div class="de-swatches">
+              <div class="de-swatch" style="background:#FF4500"></div>
+              <div class="de-swatch" style="background:#FF4A05"></div>
+            </div>
+            <div class="de-info">
+              <div class="de-score" style="color:var(--green)">Delta-E: 1.4</div>
+              <div class="de-desc">Imperceptible to human eye — colours look identical in real life</div>
+            </div>
+            <div class="de-verdict pass">PASS ✓</div>
+          </div>
+          <div class="de-row" style="background:var(--amber-bg)">
+            <div class="de-swatches">
+              <div class="de-swatch" style="background:#FF4500"></div>
+              <div class="de-swatch" style="background:#F03200"></div>
+            </div>
+            <div class="de-info">
+              <div class="de-score" style="color:var(--amber)">Delta-E: 3.2</div>
+              <div class="de-desc">Perceptible on close inspection — borderline, may need correction</div>
+            </div>
+            <div class="de-verdict fail">BORDERLINE</div>
+          </div>
+          <div class="de-row" style="background:var(--danger-bg)">
+            <div class="de-swatches">
+              <div class="de-swatch" style="background:#FF4500"></div>
+              <div class="de-swatch" style="background:#CC2200"></div>
+            </div>
+            <div class="de-info">
+              <div class="de-score" style="color:var(--red)">Delta-E: 7.8</div>
+              <div class="de-desc">Clearly different — noticeable to any observer, off-brand colour</div>
+            </div>
+            <div class="de-verdict fail">FAIL ✗</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- GMG REPORT -->
+        <div class="gmg-report">
+          <div class="report-header">
+            <div>
+              <div class="report-logo">GMG ColorProof</div>
+              <div class="report-title">Colour measurement report</div>
+            </div>
+            <div class="report-badge">✓ PASS</div>
+          </div>
+          <div class="report-grid">
+            <div class="r-section">
+              <div class="r-section-title">Job details</div>
+              <div class="r-row"><span class="r-key">Job ID</span><span class="r-val">SMP-2026-0039</span></div>
+              <div class="r-row"><span class="r-key">Client</span><span class="r-val">Pepsi (CLT-004)</span></div>
+              <div class="r-row"><span class="r-key">SKU</span><span class="r-val">Lays BBQ 25g</span></div>
+              <div class="r-row"><span class="r-key">Pantone ref</span><span class="r-val">PMS 485 C</span></div>
+              <div class="r-row"><span class="r-key">Substrate</span><span class="r-val">BOPP 20µm</span></div>
+            </div>
+            <div class="r-section">
+              <div class="r-section-title">Measurement results</div>
+              <div class="r-row"><span class="r-key">Delta-E (CIE2000)</span><span class="r-val pass">1.4 ✓</span></div>
+              <div class="r-row"><span class="r-key">Tolerance limit</span><span class="r-val">≤ 2.0</span></div>
+              <div class="r-row"><span class="r-key">L* (lightness)</span><span class="r-val pass">41.2 / 40.8</span></div>
+              <div class="r-row"><span class="r-key">a* (red-green)</span><span class="r-val pass">51.8 / 52.3</span></div>
+              <div class="r-row"><span class="r-key">b* (yellow-blue)</span><span class="r-val warn">38.2 / 37.1</span></div>
+            </div>
+          </div>
+          <div class="r-section" style="margin-bottom:14px">
+            <div class="r-section-title">Ink recipe used (CPL internal — not shared with client)</div>
+            <div class="r-row"><span class="r-key">Cyan</span><span class="r-val">0%</span></div>
+            <div class="r-row"><span class="r-key">Magenta</span><span class="r-val">91.2%</span></div>
+            <div class="r-row"><span class="r-key">Yellow</span><span class="r-val">86.7%</span></div>
+            <div class="r-row"><span class="r-key">Black</span><span class="r-val">3.1%</span></div>
+            <div class="r-row"><span class="r-key">Spot ink</span><span class="r-val">Pantone 485 C +12%</span></div>
+          </div>
+          <div class="report-footer">
+            <strong>Verdict: PASS</strong> — Delta-E 1.4 is within the agreed tolerance of ≤2.0. This shade card is approved for client review. <strong>GMG recipe stored in shade card repository for reuse.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: What the client sees -->
+  <div class="scenario fade-in" style="animation-delay:.4s">
+    <div class="scenario-header">
+      <div class="scenario-num">4</div>
+      <div>
+        <div class="scenario-title">What the client sees — plain language, no GMG jargon</div>
+        <div class="scenario-sub">The client sees only the output — PASS/FAIL + score. They do not need GMG access, training, or software. Zero cost on the client side.</div>
+      </div>
+    </div>
+    <div class="client-view">
+      <div class="cv-badge pass">✓ PASS — Delta-E: 1.4 — Colour within approved tolerance</div>
+      <div class="cv-note">
+        This shade card has been measured by CPL's colour management system and confirmed to be within the agreed colour tolerance of Delta-E ≤ 2.0. The printed shade card is an accurate match to your Pantone PMS 485 C reference. You may approve this sample for production.
+      </div>
+      <div class="cv-data">
+        <div class="cv-kpi">
+          <div class="cv-kpi-val" style="color:var(--green)">1.4</div>
+          <div class="cv-kpi-label">Your Delta-E score</div>
+        </div>
+        <div class="cv-kpi">
+          <div class="cv-kpi-val">2.0</div>
+          <div class="cv-kpi-label">Approved tolerance limit</div>
+        </div>
+        <div class="cv-kpi">
+          <div class="cv-kpi-val" style="color:var(--green)">✓ PASS</div>
+          <div class="cv-kpi-label">Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Saving breakdown -->
+  <div class="scenario fade-in" style="animation-delay:.5s">
+    <div class="scenario-header">
+      <div class="scenario-num">5</div>
+      <div>
+        <div class="scenario-title">What GMG saves — all four saving levers flow from this</div>
+        <div class="scenario-sub">GMG is the engine behind 3 of the 4 saving levers in SIP's financial case.</div>
+      </div>
+    </div>
+    <div class="saving-grid">
+      <div class="sav-card" style="background:var(--success-bg);border-color:#27AE6022">
+        <div class="sav-icon">🔁</div>
+        <div class="sav-title">Proofing cycle reduction</div>
+        <div class="sav-amount">Rs. 1.8M–2.3M / month</div>
+        <div class="sav-how">25% fewer repeat proofing runs. Proofing = Rs. 37.4M / 6 months (35% of total spend). GMG's precision recipe means the 1st print is near-right.</div>
+      </div>
+      <div class="sav-card" style="background:var(--success-bg);border-color:#27AE6022">
+        <div class="sav-icon">♻️</div>
+        <div class="sav-title">Waste material reduction</div>
+        <div class="sav-amount">Rs. 690K–1.1M / month</div>
+        <div class="sav-how">29,848 KG wasted in 6 months at Rs. 455/KG. Fewer iterations = less scrap. 30% waste reduction target.</div>
+      </div>
+      <div class="sav-card" style="background:var(--success-bg);border-color:#27AE6022">
+        <div class="sav-icon">📚</div>
+        <div class="sav-title">Shade card repository reuse</div>
+        <div class="sav-amount">Rs. 470K–780K / month</div>
+        <div class="sav-how">GMG-approved recipes stored forever. Repeat orders skip proofing entirely — production uses stored recipe. 15% reuse rate target.</div>
+      </div>
+      <div class="sav-card" style="background:var(--info-bg);border-color:var(--purple)22">
+        <div class="sav-icon">📅</div>
+        <div class="sav-title">Cycle time compression</div>
+        <div class="sav-amount">52 → 25–35 days</div>
+        <div class="sav-how">Fewer iterations = shorter total cycle. CPL goes from slower than competitors to matching industry benchmark of 25–30 days. Frees capacity for more orders.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost -->
+  <div class="scenario fade-in" style="animation-delay:.6s">
+    <div class="scenario-header">
+      <div class="scenario-num">6</div>
+      <div>
+        <div class="scenario-title">What does GMG cost?</div>
+        <div class="scenario-sub">GMG GmbH (Germany) or regional distributor: Phoenix Colour Technologies. GMG is not yet purchased — it is CPL's recommended acquisition.</div>
+      </div>
+    </div>
+    <div class="cost-grid">
+      <div class="cost-card" style="background:var(--danger-bg);border:1px solid var(--red)22">
+        <div class="cost-card-label">Cost of NOT having GMG (monthly)</div>
+        <div class="cost-card-val" style="color:var(--red)">Rs. 3.0M+</div>
+        <div class="cost-card-sub">Excess proofing + waste + cycle delays per month</div>
+      </div>
+      <div class="cost-card" style="background:var(--info-bg);border:1px solid var(--purple)22">
+        <div class="cost-card-label">GMG software — one-time acquisition</div>
+        <div class="cost-card-val" style="color:var(--purple)">Rs. 15.0M</div>
+        <div class="cost-card-sub">Fixed price — GMG GmbH or Phoenix Colour Tech</div>
+      </div>
+      <div class="cost-card" style="background:var(--success-bg);border:1px solid #27AE6022">
+        <div class="cost-card-label">Annual saving GMG enables</div>
+        <div class="cost-card-val" style="color:var(--green)">Rs. 35M+</div>
+        <div class="cost-card-sub">Payback on GMG alone: under 6 months</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:var(--info-bg);border:1px solid var(--purple)22;border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">
+      📌 <strong style="color:var(--navy)">Procurement note:</strong> GMG procurement should be initiated in Phase 1 (Months 1–3). If delivery is delayed, the portal shade card workflow proceeds without the Delta-E attachment and GMG is retrofitted in Phase 3. The rest of SIP remains unaffected.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  CPL Sampling Intelligence Platform — TME 6201 | Group 5, LUMS SDSB | GMG Colour Management
+</footer>
+
+</body>
+</html>
